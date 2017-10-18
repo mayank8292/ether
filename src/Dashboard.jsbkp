@@ -1,0 +1,86 @@
+import React, { Component } from 'react';
+import './App.css';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import AppBar from 'material-ui/AppBar';
+import Web3 from 'web3';
+import _ from 'lodash';
+
+//import Tabs from 'material-ui/Tabs';
+//import Tab from 'material-ui/Tabs';
+
+var provider=new Web3.providers.HttpProvider('http://metastock-ninantharakan.c9users.io:8080');
+var ETHEREUM_CLIENT = new Web3(provider);
+var acct=ETHEREUM_CLIENT.eth.accounts;
+
+var MasterContractABI = [{"constant":false,"inputs":[{"name":"_userID","type":"string"},{"name":"_pwd","type":"string"},{"name":"_role","type":"string"},{"name":"userAddr","type":"address"}],"name":"addUser","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"useraddress","type":"address"}],"name":"getuserID","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"inputs":[],"payable":false,"type":"constructor"}];
+
+var master_Addr='0x26674a6bf8a6fb3cffa1ed11ca440c06d550a544';
+var usr_addr='0x7b1b8bfe16dafa031c6cfdc73d85b96870ef277e';
+
+var MyMasterContract= ETHEREUM_CLIENT.eth.contract(MasterContractABI).at(master_Addr);
+
+
+class Dashboard extends Component {
+  constructor(props){
+   super(props);
+    this.state = {
+     userID: String,
+     piiTypes: [],
+     piiValues: [],
+     certifierIds: []
+    };
+  }
+  
+  componentWillMount() {
+   var userid = MyMasterContract.getuserID.call(usr_addr,{from:acct[0]});
+   var pii="Passport"
+   var piival=
+   this.setState({
+    userID: userid,
+    piiTypes: pii
+   });
+   
+  }
+ render() {
+  
+  var TableRows = [];
+  _.each(this.state.userID,(value,index) =>{
+  TableRows.push(
+   <tr>
+   <td>{this.state.userID}</td> <td>{this.state.piiTypes}</td>
+   </tr>
+   );
+  });
+    return (
+      
+     <div>
+        <MuiThemeProvider>
+          <div className="App">
+          <AppBar
+             title="XXXID Manager"
+           /> 
+        <div className="App-Content">
+        Approval Required
+        <table>
+        <thead>
+        <tr>
+        <th>User ID</th>
+        <th>PII Type</th>
+        <th>PII Value</th>
+        <th>Certifier ID</th>
+        </tr>
+        </thead>
+        <tbody>
+        {TableRows}
+        </tbody>
+        </table>
+        </div>
+           </div>
+           </MuiThemeProvider>
+           </div>
+
+      
+      );
+ }
+}
+export default Dashboard;
